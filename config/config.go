@@ -10,9 +10,9 @@ import (
 
 // App config struct
 type Config struct {
-	Endpoint string `default:"" json:"endpoint" form:"endpoint" query:"endpoint"`
-	Username string `default:"" json:"username" form:"username" query:"username"`
-	Password string `default:"" json:"password" form:"password" query:"password"`
+	Endpoint string `default:"" json:"endpoint" form:"endpoint" query:"endpoint" required:"true"`
+	Username string `default:"" json:"username" form:"username" query:"username" required:"true"`
+	Password string `default:"" json:"password" form:"password" query:"password" required:"true"`
 }
 
 // Create config from configFile
