@@ -85,10 +85,14 @@ func NewPortainer(username string, password string, endpoint string) Portainer {
 
 	err = json.Unmarshal(body, token)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
+
 	if token.Err != "" {
 		log.Fatal(token.Err)
+	}
+	if token.JWT == "" {
+		log.Fatal("Portainer server doesn't return JWT token")
 	}
 
 	log.Info("Successfully logged in as " + username)
