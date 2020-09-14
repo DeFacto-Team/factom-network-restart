@@ -1,4 +1,4 @@
-package portainer
+package main
 
 import (
 	"encoding/json"

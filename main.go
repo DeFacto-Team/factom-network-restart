@@ -7,8 +7,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/DeFacto-Team/factom-network-restart/config"
-	"github.com/DeFacto-Team/factom-network-restart/portainer"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,7 +14,7 @@ func main() {
 
 	var err error
 	var live bool
-	var conf *config.Config
+	var conf *Config
 
 	log.SetLevel(5)
 
@@ -39,7 +37,7 @@ func main() {
 	log.Info("Using config: ", configFile)
 
 	// load config
-	if conf, err = config.NewConfig(configFile); err != nil {
+	if conf, err = NewConfig(configFile); err != nil {
 		log.Fatal(err)
 	}
 
@@ -53,7 +51,7 @@ func main() {
 	}
 
 	// initialize portainer
-	p := portainer.NewPortainer(conf.Username, conf.Password, conf.Endpoint)
+	p := NewPortainer(conf.Username, conf.Password, conf.Endpoint)
 
 	// get all endpoints from portainer
 	endpoints, err := p.GetSwarmEndpoints()
