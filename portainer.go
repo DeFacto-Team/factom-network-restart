@@ -92,7 +92,7 @@ func NewPortainer(username string, password string, endpoint string) Portainer {
 		log.Fatal(token.Err)
 	}
 	if token.JWT == "" {
-		log.Fatal("Portainer server doesn't return JWT token")
+		log.Fatal("Portainer server didn't return JWT token")
 	}
 
 	log.Info("Successfully logged in as " + username)
