@@ -32,7 +32,7 @@ func main() {
 	flag.StringVar(&configFile, "c", configFile, "config.yaml path")
 
 	// parse dry run flag
-	flag.BoolVar(&live, "live", live, "live bool")
+	flag.BoolVar(&live, "live", false, "live bool")
 
 	flag.Parse()
 
