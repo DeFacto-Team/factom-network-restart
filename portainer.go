@@ -15,7 +15,7 @@ import (
 // HTTP request timeout
 const Timeout = 5 * time.Second
 
-type Context struct {
+type Portainer struct {
 	Endpoint string
 	Token    string
 }
@@ -47,15 +47,8 @@ type DockerContainer struct {
 	State string
 }
 
-type Portainer interface {
-	GetSwarmEndpoints() ([]SwarmEndpoint, error)
-	GetDockerContainers(endpointID int) ([]DockerContainer, error)
-	RestartDockerContainer(endpointID int, containerID string) error
-	GetToken() string
-}
-
 // NewPortainer initializes connection to Portainer API and obtain JWT access token
-func NewPortainer(username string, password string, endpoint string) Portainer {
+func NewPortainer(username string, password string, endpoint string) *Portainer {
 
 	url := endpoint + "/api/auth"
 
@@ -97,15 +90,15 @@ func NewPortainer(username string, password string, endpoint string) Portainer {
 
 	log.Info("Successfully logged in as " + username)
 
-	return &Context{Token: token.JWT, Endpoint: endpoint}
+	return &Portainer{Token: token.JWT, Endpoint: endpoint}
 }
 
 // GetSwarmEndpoints makes request to Portainer API and returns []SwarmEndpoint
-func (c *Context) GetSwarmEndpoints() ([]SwarmEndpoint, error) {
+func (p *Portainer) GetSwarmEndpoints() ([]SwarmEndpoint, error) {
 
 	var endpoints []SwarmEndpoint
 
-	resp, err := c.makeRequest("GET", "/api/endpoints", nil)
+	resp, err := p.makeRequest("GET", "/api/endpoints", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -120,11 +113,11 @@ func (c *Context) GetSwarmEndpoints() ([]SwarmEndpoint, error) {
 }
 
 // GetDockerContainers makes request to Portainer API and returns []DockerContainer with label "name=factomd" for requested endpointId
-func (c *Context) GetDockerContainers(endpointID int) ([]DockerContainer, error) {
+func (p *Portainer) GetDockerContainers(endpointID int) ([]DockerContainer, error) {
 
 	var containers []DockerContainer
 
-	resp, err := c.makeRequest("GET", "/api/endpoints/"+strconv.Itoa(endpointID)+"/docker/containers/json?all=1&filters={\"label\":[\"name=factomd\"]}", nil)
+	resp, err := p.makeRequest("GET", "/api/endpoints/"+strconv.Itoa(endpointID)+"/docker/containers/json?all=1&filters={\"label\":[\"name=factomd\"]}", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -146,10 +139,10 @@ func (c *Context) GetDockerContainers(endpointID int) ([]DockerContainer, error)
 }
 
 // RestartDockerContainer makes restart request to Portainer API for requested endpointId and containerId
-func (c *Context) RestartDockerContainer(endpointID int, containerID string) error {
+func (p *Portainer) RestartDockerContainer(endpointID int, containerID string) error {
 
 	// nothing returned = success
-	_, err := c.makeRequest("POST", "/api/endpoints/"+strconv.Itoa(endpointID)+"/docker/containers/"+containerID+"/restart?t=5", nil)
+	_, err := p.makeRequest("POST", "/api/endpoints/"+strconv.Itoa(endpointID)+"/docker/containers/"+containerID+"/restart?t=5", nil)
 	if err != nil {
 		return err
 	}
@@ -159,13 +152,13 @@ func (c *Context) RestartDockerContainer(endpointID int, containerID string) err
 }
 
 // Low level function making requests to Portainer API
-func (c *Context) makeRequest(method string, path string, data []byte) ([]byte, error) {
+func (p *Portainer) makeRequest(method string, path string, data []byte) ([]byte, error) {
 
-	url := c.Endpoint + path
+	url := p.Endpoint + path
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.Token)
+	req.Header.Set("Authorization", "Bearer "+p.Token)
 
 	client := &http.Client{Timeout: Timeout}
 	resp, err := client.Do(req)
@@ -178,7 +171,7 @@ func (c *Context) makeRequest(method string, path string, data []byte) ([]byte, 
 
 }
 
-// Token() returns context token
-func (c *Context) GetToken() string {
-	return c.Token
+// Token() returns Portainer token
+func (p *Portainer) GetToken() string {
+	return p.Token
 }
