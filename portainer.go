@@ -170,8 +170,3 @@ func (p *Portainer) makeRequest(method string, path string, data []byte) ([]byte
 	return ioutil.ReadAll(resp.Body)
 
 }
-
-// Token() returns Portainer token
-func (p *Portainer) GetToken() string {
-	return p.Token
-}

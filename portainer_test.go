@@ -28,7 +28,7 @@ func TestNewPortainer(t *testing.T) {
 	// start portainer client
 	p := NewPortainer("test", "test", srv.URL)
 
-	assert.Equal(p.GetToken(), success.JWT)
+	assert.Equal(p.Token, success.JWT)
 
 }
 
