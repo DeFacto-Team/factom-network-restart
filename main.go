@@ -17,7 +17,6 @@ const (
 
 func main() {
 
-	var err error
 	var live bool
 	var conf *Config
 
