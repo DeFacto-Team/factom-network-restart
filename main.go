@@ -120,7 +120,7 @@ func main() {
 
 }
 
-func restart(p Portainer, name string, endpointID int, containerID string) {
+func restart(p *Portainer, name string, endpointID int, containerID string) {
 
 	err := p.RestartDockerContainer(endpointID, containerID)
 	if err != nil {
