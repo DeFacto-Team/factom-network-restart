@@ -90,24 +90,27 @@ func main() {
 	var wg sync.WaitGroup
 
 	// Restart each factomd container
-	for i := range endpoints {
-		if endpoints[i].PublicURL != "" {
+	for _, e := range endpoints {
+		if e.PublicURL != "" {
 
-			if len(endpoints[i].Containers) > 0 {
+			if len(e.Containers) > 0 {
 				// for all online hosts with containers, restart factomd container(s)
-				for j := range endpoints[i].Containers {
+				for _, c := range e.Containers {
 					if live {
 						// if live mode, async restarting
 						wg.Add(1)
-						go restart(&wg, p, endpoints[i].Name, endpoints[i].ID, endpoints[i].Containers[j].ID)
+						go func(name string, endpointID int, containerID string) {
+							restart(p, name, endpointID, containerID)
+							wg.Done()
+						}(e.Name, e.ID, c.ID)
 					} else {
 						// if dry-run mode, just print endpoint and containerId
-						log.Info("OK ", endpoints[i].Name, " (", endpoints[i].Containers[j].ID, ")")
+						log.Info("OK ", e.Name, " (", c.ID, ")")
 					}
 				}
 			} else {
 				// log skipped endpoints with no containers
-				log.Warn("SKIP ", endpoints[i].Name)
+				log.Warn("SKIP ", e.Name)
 			}
 
 		}
@@ -117,7 +120,7 @@ func main() {
 
 }
 
-func restart(wg *sync.WaitGroup, p portainer.Portainer, name string, endpointID int, containerID string) {
+func restart(p Portainer, name string, endpointID int, containerID string) {
 
 	err := p.RestartDockerContainer(endpointID, containerID)
 	if err != nil {
@@ -128,7 +131,5 @@ func restart(wg *sync.WaitGroup, p portainer.Portainer, name string, endpointID 
 		// no error = success restart, print OK
 		log.Info("OK ", name, " (", containerID, ")")
 	}
-
-	defer wg.Done()
 
 }
