@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os/user"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -26,7 +27,7 @@ func main() {
 	}
 
 	// default config location
-	configFile := usr.HomeDir + "/.factom-restart/config.yaml"
+	configFile := filepath.Join(usr.HomeDir, ".factom-restart/config.yaml")
 
 	// check if custom config location passed as flag
 	flag.StringVar(&configFile, "c", configFile, "config.yaml path")
