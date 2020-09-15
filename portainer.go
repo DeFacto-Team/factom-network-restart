@@ -125,8 +125,11 @@ func (c *Context) GetDockerContainers(endpointID int) ([]DockerContainer, error)
 	var containers []DockerContainer
 
 	resp, err := c.makeRequest("GET", "/api/endpoints/"+strconv.Itoa(endpointID)+"/docker/containers/json?all=1&filters={\"label\":[\"name=factomd\"]}", nil)
-	if err != nil || len(resp) == 0 {
-		return nil, fmt.Errorf("Can not connect to remote host")
+	if err != nil {
+		return nil, err
+	}
+	if len(resp) == 0 {
+		return nil, fmt.Errorf("Empty response received from Portainer API")
 	}
 
 	err = json.Unmarshal(resp, &containers)
