@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	ColorRed   = "\033[31m"
-	ColorReset = "\033[0m"
+	ColorRed    = "\033[31m"
+	ColorReset  = "\033[0m"
+	ColorYellow = "\033[33m"
+	ColorBlue   = "\033[34m"
 )
 
 func main() {
@@ -46,9 +48,9 @@ func main() {
 	log.Printf("Portainer endpoint: %s\n", conf.Endpoint)
 
 	if live {
-		log.Println("LIVE mode: network will be restarted!")
+		log.Println(string(ColorYellow), "LIVE mode: network will be restarted!", string(ColorReset))
 	} else {
-		log.Println("DRY RUN mode: simulating restart")
+		log.Println(string(ColorBlue), "DRY RUN mode: simulating restart", string(ColorReset))
 	}
 
 	// initialize portainer
