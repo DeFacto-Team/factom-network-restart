@@ -2,12 +2,15 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"log"
 	"os/user"
 	"strings"
 	"sync"
+)
 
-	log "github.com/sirupsen/logrus"
+const (
+	ColorRed   = "\033[31m"
+	ColorReset = "\033[0m"
 )
 
 func main() {
@@ -16,11 +19,9 @@ func main() {
 	var live bool
 	var conf *Config
 
-	log.SetLevel(5)
-
 	usr, err := user.Current()
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 
 	// default config location
@@ -34,20 +35,20 @@ func main() {
 
 	flag.Parse()
 
-	log.Info("Using config: ", configFile)
+	log.Printf("Using config: %s\n", configFile)
 
 	// load config
 	if conf, err = NewConfig(configFile); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Info("Starting restart system")
-	log.Info("Portainer endpoint: ", conf.Endpoint)
+	log.Printf("Starting restart system\n")
+	log.Printf("Portainer endpoint: %s\n", conf.Endpoint)
 
 	if live {
-		log.Warn("LIVE mode: network will be restarted!")
+		log.Println("LIVE mode: network will be restarted!")
 	} else {
-		log.Info("DRY RUN mode: simulating restart")
+		log.Println("DRY RUN mode: simulating restart")
 	}
 
 	// initialize portainer
@@ -62,29 +63,29 @@ func main() {
 	// get factomd containers for each endpoint
 	for i := range endpoints {
 		if endpoints[i].PublicURL != "" {
-			fmt.Printf("------------------------------\n")
-			log.Debug("Trying connecting to ", endpoints[i].Name, " (", endpoints[i].PublicURL, "), ID=", endpoints[i].ID)
+			log.Println("------------------------------")
+			log.Printf("Trying connecting to %s (%s), ID=%d\n", endpoints[i].Name, endpoints[i].PublicURL, endpoints[i].ID)
 			endpoints[i].Containers, err = p.GetDockerContainers(endpoints[i].ID)
 			if err != nil {
-				log.Error(err)
+				log.Println(string(ColorRed), err, string(ColorReset))
 			}
 			for j := range endpoints[i].Containers {
 				version := strings.Split(endpoints[i].Containers[j].Image, ":")
 				if endpoints[i].Containers[j].State == "running" {
-					log.Debug("factomd container is ", endpoints[i].Containers[j].State, "\n", endpoints[i].Containers[j].ID, "\n", version[1])
+					log.Printf("factomd container is %s\n%s\n%s\n", endpoints[i].Containers[j].State, endpoints[i].Containers[j].ID, version[1])
 				} else {
-					log.Warn("factomd container is ", endpoints[i].Containers[j].State, "\n", endpoints[i].Containers[j].ID, "\n", version[1])
+					log.Printf("factomd container is %s\n%s\n%s\n", endpoints[i].Containers[j].State, endpoints[i].Containers[j].ID, version[1])
 				}
 			}
 		}
 	}
 
 	// RESTART START
-	fmt.Printf("------------------------------\n")
+	log.Println("------------------------------")
 	if live {
-		log.Info("RESTARTING NOW")
+		log.Println("RESTARTING NOW")
 	} else {
-		log.Info("SIMULATING RESTART (DRY-RUN)")
+		log.Println("SIMULATING RESTART (DRY-RUN)")
 	}
 
 	var wg sync.WaitGroup
@@ -105,12 +106,12 @@ func main() {
 						}(e.Name, e.ID, c.ID)
 					} else {
 						// if dry-run mode, just print endpoint and containerId
-						log.Info("OK ", e.Name, " (", c.ID, ")")
+						log.Printf("OK %s (%s)\n", e.Name, c.ID)
 					}
 				}
 			} else {
 				// log skipped endpoints with no containers
-				log.Warn("SKIP ", e.Name)
+				log.Printf("SKIP %s", e.Name)
 			}
 
 		}
@@ -125,11 +126,11 @@ func restart(p *Portainer, name string, endpointID int, containerID string) {
 	err := p.RestartDockerContainer(endpointID, containerID)
 	if err != nil {
 		// if restart request failed, print error
-		log.Error("ERROR ", name, " (", containerID, ")")
-		log.Error(err)
+		log.Printf("ERROR %s (%s)\n", name, containerID)
+		log.Println(string(ColorRed), err, string(ColorReset))
 	} else {
 		// no error = success restart, print OK
-		log.Info("OK ", name, " (", containerID, ")")
+		log.Printf("OK %s (%s)\n", name, containerID)
 	}
 
 }

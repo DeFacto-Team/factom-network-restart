@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // HTTP request timeout
@@ -78,7 +77,7 @@ func NewPortainer(username string, password string, endpoint string) *Portainer 
 
 	err = json.Unmarshal(body, token)
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 
 	if token.Err != "" {
@@ -88,7 +87,7 @@ func NewPortainer(username string, password string, endpoint string) *Portainer 
 		log.Fatal("Portainer server didn't return JWT token")
 	}
 
-	log.Info("Successfully logged in as " + username)
+	log.Printf("Successfully logged in as %s\n", username)
 
 	return &Portainer{Token: token.JWT, Endpoint: endpoint}
 }
