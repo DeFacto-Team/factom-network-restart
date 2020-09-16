@@ -12,7 +12,7 @@ import (
 )
 
 // HTTP request timeout
-const Timeout = 5 * time.Second
+const Timeout = 15 * time.Second
 
 type Portainer struct {
 	Endpoint string
